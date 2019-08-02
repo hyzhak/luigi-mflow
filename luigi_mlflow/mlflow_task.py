@@ -3,7 +3,8 @@ from os import path
 import mlflow
 import yaml
 
-from luigi_mlflow.utils.params_to_filename import encode_task_to_filename
+from luigi_mlflow.utils.flatten import flatten, unflatten
+from luigi_mlflow.utils.params_to_filename import encode_task_to_filename, get_params_of_task
 from luigi_mlflow.utils.project import get_project_name
 from luigi_mlflow.utils.snake import get_class_name_as_snake
 
@@ -96,6 +97,9 @@ class MLFlowTask(luigi.Task):
                 yaml.dump({
                     'run_id': run.info.run_id
                 }, f, default_flow_style=False)
+            # TODO: maybe it should be optional
+            mlflow.log_param('_name', type(self).__name__)
+            mlflow.log_params(flatten(get_params_of_task(self)))
             yield from safe_iterator(self.ml_run(run.info.run_id))
 
     def ml_run(self, run_id):
