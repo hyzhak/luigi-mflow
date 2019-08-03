@@ -4,9 +4,8 @@ import mlflow
 import yaml
 
 from luigi_mlflow.utils.flatten import flatten, unflatten
-from luigi_mlflow.utils.params_to_filename import encode_task_to_filename, get_params_of_task
+from luigi_mlflow.utils.params_to_filename import get_params_of_task, get_task_path
 from luigi_mlflow.utils.project import get_project_name
-from luigi_mlflow.utils.snake import get_class_name_as_snake
 
 
 class MLFlowTask(luigi.Task):
@@ -28,10 +27,8 @@ class MLFlowTask(luigi.Task):
     )
 
     def output(self):
-        encoded_params = encode_task_to_filename(self)
-        class_name = get_class_name_as_snake(self)
         # for the moment mlflow task does output only for models
-        output_dir = path.join('models', class_name, encoded_params)
+        output_dir = path.join('models', get_task_path(self))
         return {
             'mlflow': luigi.LocalTarget(
                 path.join(output_dir, 'mlflow.yml')
